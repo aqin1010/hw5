@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>東亞三國觀光旅遊十年趨勢儀表板 (2016-2025)</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0084ff',
+                            600: '#0066cc',
+                            700: '#004da3',
+                            900: '#002654'
+                        },
+                        tw: '#3b82f6',
+                        jp: '#ef4444',
+                        kr: '#10b981'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Microsoft JhengHei', 'PingFang TC', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Highcharts Core & Modules CDN -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Custom scrollbars and sleek glassmorphism styles */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 3px;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+        }
+        .dark .glass-panel {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.8);
+        }
+        .chart-container {
+            width: 100%;
+            height: 480px;
+            min-height: 400px;
+        }
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 380px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300 min-h-screen flex flex-col">
+
+    <!-- Top Header / Navigation -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-slate-200 dark:border-slate-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-blue-600 text-white rounded-xl shadow-md shadow-blue-500/20">
+                    <i data-lucide="plane-takeoff" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg sm:text-xl tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 bg-clip-text text-transparent">
+                        東亞觀光數據儀表板
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">台灣、日本、韓國 2016–2025 年入境人次洞察</p>
+                </div>
+            </div>
+
+            <!-- Header Quick Controls -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <a href="#article" class="hidden md:flex items-center space-x-1 text-xs font-medium px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span>紀實文章</span>
+                </a>
+                <a href="#dataset" class="hidden md:flex items-center space-x-1 text-xs font-medium px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition">
+                    <i data-lucide="table" class="w-4 h-4"></i>
+                    <span>數據明細</span>
+                </a>
+
+                <!-- Theme Toggle Button -->
+                <button id="themeToggle" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+
+        <!-- Main Chart Section (Placed at the top as requested) -->
+        <section class="glass-panel rounded-2xl p-4 sm:p-6 shadow-sm">
+            <!-- Chart Controls Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200 dark:border-slate-800">
+                <div>
+                    <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2">
+                        <i data-lucide="line-chart" class="w-5 h-5 text-blue-600"></i>
+                        台灣、日本、韓國入境人次（2016–2025年）
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">點擊下方按鈕可切換圖表型態與焦點時期</p>
+                </div>
+
+                <!-- Interactive Filters Toolbar -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <!-- Chart Type Toggle -->
+                    <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex items-center text-xs font-medium">
+                        <button id="btnSpline" onclick="updateChartType('spline')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400 transition font-bold">平滑曲線</button>
+                        <button id="btnColumn" onclick="updateChartType('column')" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">柱狀圖</button>
+                        <button id="btnArea" onclick="updateChartType('areaspline')" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">面積圖</button>
+                    </div>
+
+                    <!-- Unit Toggle -->
+                    <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex items-center text-xs font-medium">
+                        <button id="btnUnitWan" onclick="updateChartUnit('wan')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400 transition font-bold">萬人次</button>
+                        <button id="btnUnitRaw" onclick="updateChartUnit('raw')" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">完整數字</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Era Quick Highlight Filter Buttons -->
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+                <span class="text-xs font-medium text-slate-500 mr-1 flex items-center gap-1">
+                    <i data-lucide="filter" class="w-3.5 h-3.5"></i> 時期焦點聚焦：
+                </span>
+                <button onclick="highlightEra('all')" id="era-all" class="era-btn px-3 py-1 rounded-lg text-xs font-medium bg-blue-600 text-white shadow-sm transition">完整十年 (2016-2025)</button>
+                <button onclick="highlightEra('growth')" id="era-growth" class="era-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">黃金成長期 (2016-2019)</button>
+                <button onclick="highlightEra('covid')" id="era-covid" class="era-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">疫情冰封期 (2020-2021)</button>
+                <button onclick="highlightEra('recovery')" id="era-recovery" class="era-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">強勁復甦期 (2022-2025)</button>
+            </div>
+
+            <!-- Highcharts Container -->
+            <div id="container" class="chart-container rounded-xl"></div>
+        </section>
+
+        <!-- Summary KPI Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- TW KPI -->
+            <div class="glass-panel p-5 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 opacity-10 text-blue-600 group-hover:scale-110 transition-transform">
+                    <i data-lucide="map-pin" class="w-28 h-28"></i>
+                </div>
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-1 rounded-md">台灣 Taiwan</span>
+                    <span class="text-xs text-slate-500">2025 預估值</span>
+                </div>
+                <div class="text-2xl font-black text-slate-900 dark:text-white" id="kpi-tw">857.5 萬</div>
+                <div class="text-xs text-slate-500 mt-1 flex items-center justify-between">
+                    <span>歷史高峰 (2019): 1,186 萬</span>
+                    <span class="text-emerald-600 font-semibold">+9.1% (yoy)</span>
+                </div>
+            </div>
+
+            <!-- JP KPI -->
+            <div class="glass-panel p-5 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 opacity-10 text-red-600 group-hover:scale-110 transition-transform">
+                    <i data-lucide="sun" class="w-28 h-28"></i>
+                </div>
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 px-2.5 py-1 rounded-md">日本 Japan</span>
+                    <span class="text-xs text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded">歷史新高 🏆</span>
+                </div>
+                <div class="text-2xl font-black text-slate-900 dark:text-white" id="kpi-jp">4,268.4 萬</div>
+                <div class="text-xs text-slate-500 mt-1 flex items-center justify-between">
+                    <span>相比2019高峰: +33.9%</span>
+                    <span class="text-emerald-600 font-semibold">+15.8% (yoy)</span>
+                </div>
+            </div>
+
+            <!-- KR KPI -->
+            <div class="glass-panel p-5 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 opacity-10 text-emerald-600 group-hover:scale-110 transition-transform">
+                    <i data-lucide="compass" class="w-28 h-28"></i>
+                </div>
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-md">韓國 Korea</span>
+                    <span class="text-xs text-slate-500">2025 預估值</span>
+                </div>
+                <div class="text-2xl font-black text-slate-900 dark:text-white" id="kpi-kr">1,893.7 萬</div>
+                <div class="text-xs text-slate-500 mt-1 flex items-center justify-between">
+                    <span>相比2019高峰: +8.2%</span>
+                    <span class="text-emerald-600 font-semibold">+15.7% (yoy)</span>
+                </div>
+            </div>
+
+            <!-- Low Point KPI -->
+            <div class="glass-panel p-5 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 opacity-10 text-sky-500 group-hover:scale-110 transition-transform">
+                    <i data-lucide="snowflake" class="w-28 h-28"></i>
+                </div>
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 px-2.5 py-1 rounded-md">疫情冰封期 2021</span>
+                    <span class="text-xs text-rose-500 font-medium">歷史最低谷</span>
+                </div>
+                <div class="text-2xl font-black text-slate-900 dark:text-white">135.3 萬</div>
+                <div class="text-xs text-slate-500 mt-1">
+                    三國合計僅 135 萬人次 (較19年縮減 97.8%)
+                </div>
+            </div>
+        </section>
+
+        <!-- Narrative Article & Timeline Section (Placed below chart as requested) -->
+        <section id="article" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <!-- Article Main Content -->
+            <div class="lg:col-span-8 glass-panel p-6 sm:p-8 rounded-2xl shadow-sm space-y-6">
+                <div class="border-b border-slate-200 dark:border-slate-800 pb-4">
+                    <div class="flex items-center space-x-2 text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">
+                        <i data-lucide="book-open" class="w-4 h-4"></i>
+                        <span>專題紀實觀察報導</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight">
+                        走過冰封與重生的十年：2016至2025年台、日、韓國際觀光真實紀實
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-2">
+                        <span>整理發布時間：2026 年</span> • <span>資料來源：台灣交通部觀光署 / JNTO / KTO</span>
+                    </p>
+                </div>
+
+                <div class="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 space-y-5 text-sm sm:text-base leading-relaxed">
+                    <p class="text-base sm:text-lg font-medium text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800/60 p-4 rounded-xl border-l-4 border-blue-600">
+                        回顧過去這十年（2016年至2025年），東亞的國際觀光產業寫下了一頁令人難忘的真實篇章。從 2019 年前夕達到巔峰的盛況，到 2020 年一夕之間被新冠疫情全面凍結的黑暗期，再到近年各國重新開放邊境、迎來報復性反彈的奇蹟式復甦，台灣、日本與韓國這三個彼此緊密相連的鄰近市場，共同經歷了一場劇烈的「V型反轉」歷史考驗。
+                    </p>
+
+                    <!-- Era 1 -->
+                    <div id="era-section-1" class="p-5 rounded-2xl transition border border-transparent hover:border-slate-200 dark:hover:border-slate-800">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-3">
+                            <span class="w-7 h-7 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center text-sm font-black">1</span>
+                            一、 盛世與榮景：2019 年的歷史高點
+                        </h3>
+                        <p class="mb-3">
+                            時間拉回 2016 年至 2019 年的疫情爆發前。當時，受惠於亞洲經濟的持續成長、廉價航空（LCC）的大規模普及，以及各國對外推廣觀光的積極政策，三國的入境人次皆呈現穩定且強勁的攀升趨勢。
+                        </p>
+                        <ul class="list-disc pl-5 space-y-2 text-slate-600 dark:text-slate-300">
+                            <li><strong class="text-red-500">日本：</strong> 作為亞洲首屈一指的觀光大國，入境人次從 2016 年的 2,403 萬人次一路狂飆，在 2019 年創下 <strong>3,188 萬人次</strong>的空前紀錄。街頭巷尾隨處可見來自全球的旅客，觀光紅利達到極致。</li>
+                            <li><strong class="text-emerald-500">韓國：</strong> 同樣在 2019 年迎來 1,750 萬人次的歷史高峰，韓流文化與購物熱潮吸引了大批國際觀光客。</li>
+                            <li><strong class="text-blue-500">台灣：</strong> 入境旅遊市場亦穩定上揚，在 2019 年突破千萬大關，達到 <strong>1,186 萬人次</strong>的高位，展現出台灣在地文化與美食在國際上的強大吸引力。</li>
+                        </ul>
+                    </div>
+
+                    <!-- Era 2 -->
+                    <div id="era-section-2" class="p-5 rounded-2xl transition border border-transparent hover:border-slate-200 dark:hover:border-slate-800">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-3">
+                            <span class="w-7 h-7 bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 rounded-lg flex items-center justify-center text-sm font-black">2</span>
+                            二、 黑暗的冰河期：2020 至 2021 年的斷崖式急凍
+                        </h3>
+                        <p class="mb-3">
+                            然而，一場突如其來的全球疫情（COVID-19）徹底打破了這一切。2020 年初開始，各國為了守住公共衛生防線，紛紛祭出嚴格的邊境管制、航班停飛與全面隔離政策。
+                        </p>
+                        <p class="mb-3">
+                            <strong>2020 年</strong>，入境數字瞬間從雲端跌落谷底：日本驟降至 411 萬人次，韓國跌至 251 萬人次，台灣則萎縮至 137 萬人次。
+                        </p>
+                        <p class="mb-3">
+                            <strong>2021 年</strong>迎來了觀光史上最黑暗的一年。隨著變種病毒肆虐與鎖國政策持續，日本的入境人次僅剩可憐的 <strong>24 萬</strong>，台灣更是跌至 <strong>14 萬人次</strong>的冰點。
+                        </p>
+                        <blockquote class="text-xs sm:text-sm italic border-l-2 border-amber-500 pl-3 py-1 text-slate-500 dark:text-slate-400 bg-amber-500/5 rounded-r">
+                            這段期間，無數的旅行社、飯店、航空公司與導遊面臨前所未有的生存危機。這不是抽象的數字，而是無數從業人員咬緊牙關、苦撐度日的真實故事。
+                        </blockquote>
+                    </div>
+
+                    <!-- Era 3 -->
+                    <div id="era-section-3" class="p-5 rounded-2xl transition border border-transparent hover:border-slate-200 dark:hover:border-slate-800">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-3">
+                            <span class="w-7 h-7 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-lg flex items-center justify-center text-sm font-black">3</span>
+                            三、 絕地大反攻：2022 至 2025 年的強勢復甦
+                        </h3>
+                        <p class="mb-3">
+                            隨著 2022 年下半年起各國疫苗普及、口服藥物出現，全球陸續宣布與病毒共存並解除邊境管制，沉寂三年的旅遊需求瞬間如火山般爆發。
+                        </p>
+                        <ul class="list-disc pl-5 space-y-2 text-slate-600 dark:text-slate-300">
+                            <li><strong>日本的奇蹟式狂飆：</strong> 受惠於日圓匯率走貶與強大的觀光底蘊，日本的復甦速度最為驚人。2023 年迅速回彈至 2,506 萬人次，2024 年一舉突破 3,687 萬人次，而在剛過去的 <strong>2025 年</strong>，入境總人次更是創下歷史新高的 <strong>4,268 萬人次</strong>，徹底超越疫情前的巔峰。</li>
+                            <li><strong>韓國與台灣的穩健重建：</strong> 韓國在 2025 年回升至 <strong>1,893 萬人次</strong>，超越了 2019 年的水準；台灣則在 2025 年回升至 <strong>857 萬人次</strong>，雖然距離歷史高點仍有一步之遙，但復甦的動能已逐漸穩固。</li>
+                        </ul>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-200 dark:border-slate-800">
+                        <h4 class="font-bold text-slate-900 dark:text-white mb-2">結語與展望</h4>
+                        <p>
+                            從 2016 年的穩健成長、2019 年的繁華頂點，到 2021 年幾近歸零的殘酷現實，再到 2025 年突破極限的華麗轉身，這十年是東亞觀光史上最真實、最跌宕起伏的一段歷程。它見證了人類面對災難時的脆弱，卻也展現了觀光產業在絕境中重生的無比韌性。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Interactive Timeline / Quick Nav -->
+            <div class="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+                <div class="glass-panel p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-2">
+                        <i data-lucide="history" class="w-4 h-4 text-blue-600"></i>
+                        觀光大事紀時間軸
+                    </h3>
+
+                    <div class="relative border-l-2 border-slate-200 dark:border-slate-800 ml-3 space-y-6">
+                        <!-- Item 1 -->
+                        <div class="ml-5 relative group cursor-pointer" onclick="highlightEra('growth')">
+                            <span class="absolute -left-[27px] top-1 w-3.5 h-3.5 rounded-full bg-blue-500 ring-4 ring-white dark:ring-slate-900"></span>
+                            <span class="text-xs font-bold text-blue-600 dark:text-blue-400">2016 - 2019</span>
+                            <h4 class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 transition">黃金高峰期</h4>
+                            <p class="text-xs text-slate-500 mt-1">廉航普及與觀光紅利爆發，日本首度衝破 3,000 萬大關。</p>
+                        </div>
+
+                        <!-- Item 2 -->
+                        <div class="ml-5 relative group cursor-pointer" onclick="highlightEra('covid')">
+                            <span class="absolute -left-[27px] top-1 w-3.5 h-3.5 rounded-full bg-sky-400 ring-4 ring-white dark:ring-slate-900"></span>
+                            <span class="text-xs font-bold text-sky-500">2020 - 2021</span>
+                            <h4 class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-sky-500 transition">全球疫情冰封</h4>
+                            <p class="text-xs text-slate-500 mt-1">國境封鎖，2021 年三國總入境人次跌至近十年最低谷。</p>
+                        </div>
+
+                        <!-- Item 3 -->
+                        <div class="ml-5 relative group cursor-pointer" onclick="highlightEra('recovery')">
+                            <span class="absolute -left-[27px] top-1 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-4 ring-white dark:ring-slate-900"></span>
+                            <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">2022 - 2025</span>
+                            <h4 class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-emerald-600 transition">報復性反彈與新高</h4>
+                            <p class="text-xs text-slate-500 mt-1">解封後狂飆，日本 2025 年達到 4,268 萬人次歷史新高。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fast Data Insights Widget -->
+                <div class="glass-panel p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-blue-500/5 to-indigo-500/5">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
+                        數據亮點觀測
+                    </h3>
+                    <div class="space-y-3 text-xs text-slate-600 dark:text-slate-300">
+                        <div class="p-2.5 rounded-xl bg-white/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50">
+                            <span class="font-bold text-slate-900 dark:text-white">日本領先動能：</span>
+                            受惠於日圓匯率優勢，日本復甦速度遠超鄰國，2025 年較 2019 年成長 33.9%。
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-white/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50">
+                            <span class="font-bold text-slate-900 dark:text-white">台灣復甦進度：</span>
+                            台灣 2025 年回升至 857.5 萬人次，已恢復至 2019 年高峰期的 72.3%。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dataset & Source Disclosure Section -->
+        <section id="dataset" class="glass-panel rounded-2xl p-6 shadow-sm space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+                <div>
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <i data-lucide="database" class="w-5 h-5 text-indigo-600"></i>
+                        數據表格與來源聲明 (`人.xlsx`)
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">提供透明可匯出的原始統計數據與官方權威資料來源</p>
+                </div>
+
+                <!-- Export Controls -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="exportDataCSV()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>下載 CSV</span>
+                    </button>
+                    <button onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
+                        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                        <span>列印頁面</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Responsive Data Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs sm:text-sm border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700">
+                            <th class="p-3">年份</th>
+                            <th class="p-3 text-blue-600 dark:text-blue-400">台灣 (Taiwan)</th>
+                            <th class="p-3 text-red-600 dark:text-red-400">日本 (Japan)</th>
+                            <th class="p-3 text-emerald-600 dark:text-emerald-400">韓國 (South Korea)</th>
+                            <th class="p-3 text-slate-500">三國合計 (Total)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody" class="divide-y divide-slate-200 dark:divide-slate-800 text-slate-600 dark:text-slate-300 font-mono">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Authoritative Data Sources Grid -->
+            <div class="pt-6 border-t border-slate-200 dark:border-slate-800">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">官方數據來源說明</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800">
+                        <div class="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span> 台灣：交通部觀光署
+                        </div>
+                        <p class="text-slate-500">採用觀光署統計資料庫公布之來台旅客總人次（與國際通用口徑可能有些許差異）。</p>
+                        <a href="https://stat.taiwan.net.tw/" target="_blank" class="text-blue-600 hover:underline mt-2 inline-block">stat.taiwan.net.tw ↗</a>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800">
+                        <div class="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span> 日本：JNTO 政府觀光局
+                        </div>
+                        <p class="text-slate-500">採用日本政府觀光局官方公布之年度訪日外客數（訪日外客数）。</p>
+                        <a href="https://www.jnto.go.jp/statistics/data/visitors-statistics/" target="_blank" class="text-blue-600 hover:underline mt-2 inline-block">jnto.go.jp/statistics ↗</a>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800">
+                        <div class="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 韓國：韓國觀光公社 KTO
+                        </div>
+                        <p class="text-slate-500">採用韓國觀光公社（Visit Korea）官方統計之入境旅客總數。</p>
+                        <a href="https://kto.visitkorea.or.kr/" target="_blank" class="text-blue-600 hover:underline mt-2 inline-block">kto.visitkorea.or.kr ↗</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 dark:text-slate-400 space-y-2">
+            <p>東亞三國入境觀光數據儀表板 (2016–2025) • 基於 Highcharts 與 Tailwind CSS 打造</p>
+            <p class="text-slate-400 dark:text-slate-600">數據僅供學術研討與產業洞察參考，請以各國官方最新公告為準。</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Core Raw Dataset
+        const years = ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
+        const dataTW = [10690279, 10739601, 11066707, 11864105, 1377861, 140479, 895962, 6486951, 7857686, 8574547];
+        const dataJP = [24039053, 28691073, 31191856, 31882049, 4115828, 245862, 3832110, 25066350, 36870148, 42683600];
+        const dataKR = [17241823, 13335758, 15346879, 17502756, 2519118, 967003, 3198017, 11031665, 16369629, 18936562];
+
+        // State management
+        let currentChartType = 'spline';
+        let currentUnit = 'wan'; // 'wan' or 'raw'
+        let chartInstance = null;
+
+        // Initialize App on Window Load to guarantee CDN scripts are fully ready
+        window.onload = function () {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+            populateDataTable();
+            initChart();
+            setupThemeToggle();
+        };
+
+        // Theme Toggle Setup
+        function setupThemeToggle() {
+            const themeBtn = document.getElementById('themeToggle');
+            if (themeBtn) {
+                themeBtn.addEventListener('click', () => {
+                    document.documentElement.classList.toggle('dark');
+                    setTimeout(() => {
+                        initChart();
+                    }, 100);
+                });
+            }
+        }
+
+        // Build Data Table Rows dynamically
+        function populateDataTable() {
+            const tbody = document.getElementById('dataTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            years.forEach((yr, idx) => {
+                const tw = dataTW[idx];
+                const jp = dataJP[idx];
+                const kr = dataKR[idx];
+                const total = tw + jp + kr;
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/50 transition';
+                tr.innerHTML = `
+                    <td class="p-3 font-bold">${yr}</td>
+                    <td class="p-3">${tw.toLocaleString()}</td>
+                    <td class="p-3">${jp.toLocaleString()}</td>
+                    <td class="p-3">${kr.toLocaleString()}</td>
+                    <td class="p-3 font-bold text-slate-900 dark:text-white">${total.toLocaleString()}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Highcharts Configuration with your exact snippet settings
+        function initChart() {
+            if (typeof Highcharts === 'undefined') {
+                console.error('Highcharts CDN is not loaded yet.');
+                return;
+            }
+
+            const isDark = document.documentElement.classList.contains('dark');
+
+            chartInstance = Highcharts.chart('container', {
+                chart: {
+                    type: currentChartType,
+                    plotBorderColor: isDark ? '#334155' : 'var(--highcharts-neutral-color-10, #e6e6e6)',
+                    plotBorderWidth: 1,
+                    plotBorderRadius: 5,
+                    backgroundColor: 'transparent'
+                },
+
+                title: {
+                    text: '台灣、日本、韓國入境人次（2016–2025年）',
+                    align: 'left',
+                    style: { color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 'bold' }
+                },
+
+                subtitle: {
+                    text: '各國家與地區入境總人次',
+                    align: 'left',
+                    style: { color: isDark ? '#94a3b8' : '#64748b' }
+                },
+
+                credits: { enabled: false },
+
+                yAxis: {
+                    title: {
+                        text: '入境人次',
+                        style: { color: isDark ? '#cbd5e1' : '#475569' }
+                    },
+                    labels: {
+                        style: { color: isDark ? '#cbd5e1' : '#475569' },
+                        formatter: function () {
+                            if (currentUnit === 'wan') {
+                                return (this.value / 10000).toLocaleString() + ' 萬';
+                            }
+                            return this.value.toLocaleString();
+                        }
+                    },
+                    gridLineColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'
+                },
+
+                xAxis: {
+                    type: 'datetime',
+                    crosshair: true,
+                    // 設定每筆資料間距為一年 (365天 = 31536000000 毫秒)
+                    dateTimeLabelFormats: {
+                        year: {
+                            main: '%Y'
+                        }
+                    },
+                    lineWidth: 0,
+                    tickLength: 6,
+                    tickColor: isDark ? '#334155' : 'var(--highcharts-neutral-color-10, #e6e6e6)',
+                    labels: {
+                        style: { color: isDark ? '#cbd5e1' : '#475569' }
+                    }
+                },
+
+                legend: {
+                    enabled: true,
+                    itemStyle: { color: isDark ? '#f1f5f9' : '#1e293b' }
+                },
+
+                tooltip: {
+                    shared: true,
+                    useHTML: true,
+                    backgroundColor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                    borderColor: isDark ? '#334155' : '#cbd5e1',
+                    borderRadius: 8,
+                    headerFormat: '<table><caption>{point.x:%Y}</caption>',
+                    pointFormat: '<tr>' +
+                        '<th>' +
+                          '<svg width="20" height="10" style="vertical-align:middle; display:inline-block;">' +
+                            '<path d="M 5 5 L 13 5" stroke="{series.color}" stroke-width="5" stroke-linecap="round" />' +
+                          '</svg>' +
+                          '{series.name}' +
+                        '</th>' +
+                        '<td style="text-align:right; font-weight:bold; padding-left:8px;">{point.y:,.0f} 人次</td>' +
+                      '</tr>',
+                    footerFormat: '</table>'
+                },
+
+                plotOptions: {
+                    series: {
+                        // 以 1 年為間距 (365天 = 31536000000 毫秒)
+                        pointStart: Date.UTC(2016, 0, 1),
+                        pointInterval: 365 * 24 * 3600 * 1000,
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+
+                series: [
+                    {
+                        name: '台灣',
+                        color: '#7cb5ec',
+                        data: [
+                            10690279, 10739601, 11066707, 11864105, 1377861,
+                            140479, 895962, 6486951, 7857686, 8574547
+                        ]
+                    },
+                    {
+                        name: '日本',
+                        color: '#434348',
+                        data: [
+                            24039053, 28691073, 31191856, 31882049, 4115828,
+                            245862, 3832110, 25066350, 36870148, 42683600
+                        ]
+                    },
+                    {
+                        name: '韓國',
+                        color: '#90ed7d',
+                        data: [
+                            17241823, 13335758, 15346879, 17502756, 2519118,
+                            967003, 3198017, 11031665, 16369629, 18936562
+                        ]
+                    }
+                ]
+            });
+        }
+
+        // Toggle Chart Types
+        function updateChartType(type) {
+            currentChartType = type;
+            ['btnSpline', 'btnColumn', 'btnArea'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.className = 'px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition';
+            });
+
+            if (type === 'spline') document.getElementById('btnSpline').className = 'px-3 py-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400 transition font-bold';
+            if (type === 'column') document.getElementById('btnColumn').className = 'px-3 py-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400 transition font-bold';
+            if (type === 'areaspline') document.getElementById('btnArea').className = 'px-3 py-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400 transition font-bold';
+
+            initChart();
+        }
+
+        // Toggle Chart Units
+        function updateChartUnit(unit) {
+            currentUnit = unit;
+            const btnWan = document.getElementById('btnUnitWan');
+            const btnRaw = document.getElementById('btnUnitRaw');
+
+            if (unit === 'wan') {
+                if (btnWan) btnWan.className = 'px-3 py-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400 transition font-bold';
+                if (btnRaw) btnRaw.className = 'px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition';
+            } else {
+                if (btnRaw) btnRaw.className = 'px-3 py-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400 transition font-bold';
+                if (btnWan) btnWan.className = 'px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition';
+            }
+
+            initChart();
+        }
+
+        // Era Highlight Filter
+        function highlightEra(era) {
+            document.querySelectorAll('.era-btn').forEach(btn => {
+                btn.className = 'era-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition';
+            });
+
+            const activeBtn = document.getElementById(`era-${era}`);
+            if (activeBtn) {
+                activeBtn.className = 'era-btn px-3 py-1 rounded-lg text-xs font-medium bg-blue-600 text-white shadow-sm transition';
+            }
+
+            if (!chartInstance) return;
+
+            chartInstance.xAxis[0].removePlotBand('era-band');
+
+            let fromVal, toVal, eraText = "";
+
+            if (era === 'growth') {
+                fromVal = Date.UTC(2015, 6, 1);
+                toVal = Date.UTC(2019, 6, 1);
+                eraText = "2016-2019 黃金成長期";
+                document.getElementById('era-section-1')?.scrollIntoView({ behavior: 'smooth' });
+            } else if (era === 'covid') {
+                fromVal = Date.UTC(2019, 6, 1);
+                toVal = Date.UTC(2021, 6, 1);
+                eraText = "2020-2021 疫情冰封期";
+                document.getElementById('era-section-2')?.scrollIntoView({ behavior: 'smooth' });
+            } else if (era === 'recovery') {
+                fromVal = Date.UTC(2021, 6, 1);
+                toVal = Date.UTC(2025, 6, 1);
+                eraText = "2022-2025 強勁復甦期";
+                document.getElementById('era-section-3')?.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            if (era !== 'all') {
+                chartInstance.xAxis[0].addPlotBand({
+                    id: 'era-band',
+                    from: fromVal,
+                    to: toVal,
+                    color: 'rgba(59, 130, 246, 0.08)',
+                    label: {
+                        text: eraText,
+                        style: { color: '#3b82f6', fontWeight: 'bold' },
+                        y: 20
+                    }
+                });
+            }
+        }
+
+        // Export CSV Functionality
+        function exportDataCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += "年份,台灣 (Taiwan),日本 (Japan),韓國 (South Korea),三國合計 (Total)\n";
+
+            years.forEach((yr, idx) => {
+                const tw = dataTW[idx];
+                const jp = dataJP[idx];
+                const kr = dataKR[idx];
+                const total = tw + jp + kr;
+                csvContent += `${yr},${tw},${jp},${kr},${total}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "East_Asia_Tourism_2016_2025.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
